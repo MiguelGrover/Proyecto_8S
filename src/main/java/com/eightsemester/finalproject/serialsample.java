@@ -12,7 +12,10 @@ import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent; 
 import gnu.io.SerialPortEventListener; 
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -21,12 +24,16 @@ import java.util.Enumeration;
  */
 public class serialsample implements SerialPortEventListener {
     SerialPort serialPort;
+    static volatile String response = null;
+    
         /** The port we're normally going to use. */
 	private static final String PORT_NAMES[] = { 
 			"/dev/tty.usbserial-A9007UX1", // Mac OS X
                         "/dev/ttyACM0", // Raspberry Pi
 			"/dev/ttyUSB0", // Linux
-			"COM3", // Windows
+			"COM4", // Windows
+                        "COM5", // Windows
+                        "COM3", // Windows
 	};
 	/**
 	* A BufferedReader which will be fed by a InputStreamReader 
@@ -45,7 +52,8 @@ public class serialsample implements SerialPortEventListener {
                 // the next line is for Raspberry Pi and 
                 // gets us into the while loop and was suggested here was suggested http://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
                 //System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/ttyACM0");
-
+                
+                
 		CommPortIdentifier portId = null;
 		Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
 
@@ -104,27 +112,41 @@ public class serialsample implements SerialPortEventListener {
 	public synchronized void serialEvent(SerialPortEvent oEvent) {
 		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 			try {
+                                //output.write("hola".getBytes());
+                                //output.flush();
 				String inputLine=input.readLine();
 				System.out.println(inputLine);
+                                response = inputLine;
+                                
 			} catch (Exception e) {
 				System.err.println(e.toString());
 			}
-		}
+                }
+                
 		// Ignore all the other eventTypes, but you should consider the other ones.
 	}
+        
+        public void escribir(String mensaje) throws IOException, InterruptedException{
+            output.write(mensaje.getBytes("UTF-8"));
+            output.flush();
+            
+        }
+        
+        
+        //Esto es lo que tiene que ir en el codigo principal.
+    public static void main(String[] args) throws Exception {
+        serialsample main = new serialsample();
+        main.initialize();
+        Thread.sleep(2000);
+        String[] palabras = {"Hola","Adios"};
+        for (String palabra : palabras) {
+            main.escribir(palabra);
+        while(response==null){}
+        response = null;
+        }
 
-	public static void main(String[] args) throws Exception {
-		serialsample main = new serialsample();
-		main.initialize();
-		Thread t=new Thread() {
-			public void run() {
-				//the following line will keep this app alive for 1000 seconds,
-				//waiting for events to occur and responding to them (printing incoming messages to console).
-				try {Thread.sleep(1000000);} catch (InterruptedException ie) {}
-			}
-		};
-		t.start();
-		System.out.println("Started");
-	}
+        System.out.println("Started");
+    }
+        
 
 }
