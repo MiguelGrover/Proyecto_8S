@@ -19,22 +19,30 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import graphics.*;
+import static graphics.StartGame.board;
+import pieces.*;
+
 /**
  *
  * @author micky
  */
 public class PruebaCamara {
     
-    private final String[] piezas = {"Pawn","Rook","Knight","Queen","King","Bishop"};
-    private final String[] color = {"Black","White"};
-    private final int[] valores = {-2655484,-4160173,-7104107,-7165095,-8021359,-8415602,-9204604,-9585920,-10326036,-11030382,-12857344,-14307674};
-    
+    private static String[][] piezas;
+    private final int[] valores = {-2655484,-4160173,-7104107,-7165095,-8021359,-8415602,-9204604,-9585920,-10326036,-11030382,-12857344,-14307674};    
     
     public static void main(String[] args) throws IOException {
         Webcam webcam = getWebcam();
         BufferedImage capture = getImage(webcam);
         BufferedImage[] tablero = getChessTable(capture);
+        tablero[0].getRGB(30,30);
+        System.out.println(tablero[0].getRGB(30,30));
         
+        imagesToPieces(tablero);
+
+        showTablero(tablero);
+        savetablero(tablero);
     }
     
     public static Webcam getWebcam(){
@@ -68,7 +76,7 @@ public class PruebaCamara {
             for (int y = 0; y < cols; y++) {  
                 //Initialize the image array with image chunks  
                 imgs[count] = new BufferedImage(chunkWidth, chunkHeight, 5);  
-  
+                                
                 // draws the image chunk  
                 Graphics2D gr = imgs[count++].createGraphics();  
                 gr.drawImage(capture, 
@@ -81,14 +89,15 @@ public class PruebaCamara {
         return imgs;
     }
     
-    public void savetablero(BufferedImage[] tablero) throws IOException{
+    public static void savetablero(BufferedImage[] tablero) throws IOException{
         //writing mini images into image files  
         for (int i = 0; i < tablero.length; i++) {  
             ImageIO.write(tablero[i], "jpg", new File("images/img" + i + ".jpg"));  
-        } 
+        }
+        
     }
     
-    public void showTablero(BufferedImage[] tablero){
+    public static void showTablero(BufferedImage[] tablero){
         JPanel panel = new JPanel();
         for(int x = 0; x < 64; x ++){
             JLabel picLabel = new JLabel(new ImageIcon(tablero[x]));
@@ -99,5 +108,96 @@ public class PruebaCamara {
         jf.add(panel);
         jf.setSize(540,560);
         jf.setVisible(true);
+    }
+    
+    public static void imagesToPieces(BufferedImage[] images){
+        int color;
+        board.createSquares();
+
+        for (int i = 0; i < 64; i++) {
+
+            color = images[i].getRGB(30,30);
+            
+            if(color <=  -2655484 || color >= -2355484){
+               board.addPiece(new Pawn("src/pieces_images/Wpawn.png", "white", new int[]{6, i}), 6, i);
+               //piezas[i][0] = "white";
+               //piezas[i][1] = "pawn";
+               
+            } else if(color <=  -4160173 || color >= -4060173){
+               board.addPiece(new Rook("src/pieces_images/Wrook.png", "white", new int[]{7, 7}), 7, 7);
+               board.addPiece(new Rook("src/pieces_images/Wrook.png", "white", new int[]{7, 0}), 7, 0);
+               
+               //piezas[i][0] = "white";
+               //piezas[i][1] = "rook";
+               
+            } else if(color <=  -7104107 || color >= -7102107) {
+               board.addPiece(new pieces.King("src/pieces_images/Wking.png", "white", new int[]{7, 3}), 7, 3);
+
+               //piezas[i][0] = "white";
+               //piezas[i][1] = "king";
+               
+            } else if(color <=  -7165095 || color >= -7145095) {
+               board.addPiece(new Queen("src/pieces_images/Wqueen.png", "white", new int[]{7, 4}), 7, 4);
+
+               //piezas[i][0] = "white";
+               //piezas[i][1] = "queen";
+               
+            } else if(color <=  -8021359 || color >= -8001359) {
+               board.addPiece(new Bishop("src/pieces_images/Wbishop.png", "white", new int[]{7, 5}), 7, 5);
+               board.addPiece(new Bishop("src/pieces_images/Wbishop.png", "white", new int[]{7, 2}), 7, 2);
+               
+               //piezas[i][0] = "white";
+               //piezas[i][1] = "bishop";
+               
+            } else if(color <=  -8415602 || color >= -8315602) {
+               board.addPiece(new Knight("src/pieces_images/Wknight.png", "white", new int[]{7, 6}), 7, 6);
+               board.addPiece(new Knight("src/pieces_images/Wknight.png", "white", new int[]{7, 1}), 7, 1);
+
+               //piezas[i][0] = "white";
+               //piezas[i][1] = "knight";
+               
+            } else if(color <=  -9204604 || color >= -9004604) {
+               board.addPiece(new Pawn("src/pieces_images/Bpawn.png", "black", new int[]{1, i}), 1, i);
+
+               //piezas[i][0] = "black";
+               //piezas[i][1] = "pawn";
+               
+            } else if(color <=  -9585920 || color >= -9485920) {
+               board.addPiece(new Rook("src/pieces_images/Brook.png", "black", new int[]{0, 7}), 0, 7);
+               board.addPiece(new Rook("src/pieces_images/Brook.png", "black", new int[]{0, 0}), 0, 0);
+               
+               //piezas[i][0] = "black";
+               //piezas[i][1] = "rook";
+               
+            } else if(color <=  -10326036 || color >= -10126036) {
+               board.addPiece(new King("src/pieces_images/Bking.png", "black", new int[]{0, 3}), 0, 3);
+               //piezas[i][0] = "black";
+               //piezas[i][1] = "king";
+               
+            } else if(color <=  -11030382 || color >= -10530382) {
+               board.addPiece(new Queen("src/pieces_images/Bqueen.png", "black", new int[]{0, 4}), 0, 4);
+
+               //piezas[i][0] = "black";
+               //piezas[i][1] = "queen";
+               
+            } else if(color <=  -12857344 || color >= -12557344) {
+                board.addPiece(new Bishop("src/pieces_images/Bbishop.png", "black", new int[]{0, 5}), 0, 5);
+                board.addPiece(new Bishop("src/pieces_images/Bbishop.png", "black", new int[]{0, 2}), 0, 2);
+        
+               //piezas[i][0] = "black";
+               //piezas[i][1] = "bishop";
+               
+            } else if(color <=  -14307674 || color >= -13307674) {
+                board.addPiece(new Knight("src/pieces_images/Bknight.png", "black", new int[]{0, 6}), 0, 6);
+                board.addPiece(new Knight("src/pieces_images/Bknight.png", "black", new int[]{0, 1}), 0, 1);
+                
+               //piezas[i][0] = "black";
+               //piezas[i][1] = "knight";
+               
+            } else {
+               piezas[i][0] = "";
+               piezas[i][1] = "";
+            }
+        }
     }
 }
