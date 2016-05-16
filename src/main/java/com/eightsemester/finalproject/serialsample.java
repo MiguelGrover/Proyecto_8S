@@ -13,9 +13,12 @@ import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent; 
 import gnu.io.SerialPortEventListener; 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import pieces.Piece;
+import pieces.Rook;
 
 
 /**
@@ -132,13 +135,84 @@ public class serialsample implements SerialPortEventListener {
             
         }
         
+    public static String[] difference(Piece[][] photo, Piece[][] move){
+        int width = 8;
+        int height = 8;
+        boolean[][] checked = new boolean[width][height];
+        ArrayList<String> commands = new ArrayList<>();
         
+        //Detectar que piezas se mantuvieron igual
+        for(int x = width - 1 ; x > -1 ; x--){
+            for(int y = height - 1 ; y > -1 ; y--){
+                Piece pp = photo[x][y];
+                Piece pm = move[x][y];
+                if(pp!=null && pm!= null){
+                    if(pp.getTeam().equals(pm.getTeam())){
+                        if(pp.getType().equals(pm.getType())){
+                            checked[x][y] = true;
+                        }
+                    }
+                }else if(pp == null && pm == null){
+                    checked[x][y] = true;
+                }
+            }
+        }
+        /* A este punto el checked tiene los espacios que quedaron iguales como 
+         * true por lo que solo 2 casillas quedaran en false
+         * las casillas en false indicaran donde se presento un movimiento
+         * se debera verificar si habia una pieza para poder determinar si se
+         * retira o se conserva.
+        */
+        int nxpos = 0;
+        int nypos = 0;
+        int oxpos = 0;
+        int oypos = 0;
+        for(int x = width - 1 ; x > -1 ; x--){
+            for(int y = height - 1 ; y > -1 ; y--){
+                if(checked[x][y] == false){
+                    Piece pp = photo[x][y];
+                    Piece pm = move[x][y];
+//                    if(pm!=null){
+//                        commands.add(""+x+","+y+","+-1+","+-1);
+//                        nxpos = x;
+//                        nypos = y;
+//                    }else{
+//                        oxpos = x;
+//                        oypos = y;
+//                    }
+                    if(pp != null && pm == null){
+                        oxpos = x;
+                        oypos = y;
+                        checked[x][y] = true;
+                    }else {
+                        nxpos = x;
+                        nypos = y;
+                        if(pp!=null){
+                            commands.add(""+x+","+y+","+-1+","+-1);
+                        }
+                    }
+                    
+                }
+            }
+        }
+        commands.add(""+oxpos+","+oypos+","+nxpos+","+nypos);
+        
+        return (String[]) commands.toArray(new String[0]);
+    }
+    
+    
         //Esto es lo que tiene que ir en el codigo principal.
     public static void main(String[] args) throws Exception {
         serialsample main = new serialsample();
         main.initialize();
+        Piece[][] pp = new Piece[8][8];
+        pp[0][0] = new pieces.Rook("src/pieces_images/Brook.png", "black", new int[]{0, 0});
+        pp[7][1] = new pieces.Rook("src/pieces_images/Brook.png", "white", new int[]{7, 1});
+        Piece[][] pm = new Piece[8][8];
+        pm[1][1] = new pieces.Rook("src/pieces_images/Brook.png", "black", new int[]{1, 1});
+        String[] palabras = difference(pp, pm);
         Thread.sleep(2000);
-        String[] palabras = {"Hola","Adios"};
+        //String[] palabras = {"Hola","Adios"};
         for (String palabra : palabras) {
             main.escribir(palabra);
         while(response==null){}
@@ -146,6 +220,7 @@ public class serialsample implements SerialPortEventListener {
         }
 
         System.out.println("Started");
+        main.close();
     }
         
 
